@@ -1,0 +1,349 @@
+{
+    "paragraphs": [
+        {
+            "text": "%flink.ssql\n-- First we create a table in Glue to store the schema of the Mana coming from your mines!\n-- Is that the right data stream?\ndrop table if exists ManaFarm;\nCREATE TABLE `ManaFarm` (\n  `mine_name` STRING,\n  `rucinon` INT,\n  `rubyon` INT,\n  `diamond` INT,\n  `energon` INT,\n  `sludge` INT,\n  `energy_to_mine` INT,\n  `user_action_time` as PROCTIME()\n)\nWITH (\n  'connector' = 'kinesis',\n  'stream' = 'MYUNICORNSTREAM',\n  'aws.region' = 'us-east-1',\n  'scan.stream.initpos' = 'LATEST',\n  'format' = 'json',\n  'scan.shard.getrecords.maxretries'='10'\n);",
+            "user": "anonymous",
+            "dateUpdated": "2022-10-13T12:55:43+0000",
+            "progress": 0,
+            "config": {
+                "editorSetting": {
+                    "language": "sql",
+                    "editOnDblClick": false,
+                    "completionKey": "TAB",
+                    "completionSupport": true
+                },
+                "colWidth": 12,
+                "editorMode": "ace/mode/sql",
+                "fontSize": 9,
+                "results": {},
+                "enabled": true
+            },
+            "settings": {
+                "params": {},
+                "forms": {}
+            },
+            "apps": [],
+            "runtimeInfos": {},
+            "progressUpdateIntervalMs": 500,
+            "jobName": "paragraph_1665665499484_1740559420",
+            "id": "paragraph_1665017418878_757459966",
+            "dateCreated": "2022-10-13T12:51:39+0000",
+            "dateStarted": "2022-10-13T12:55:43+0000",
+            "dateFinished": "2022-10-13T12:55:46+0000",
+            "status": "FINISHED",
+            "focus": true,
+            "$$hashKey": "object:279"
+        },
+        {
+            "text": "\n%flink.ssql(type=update, refreshInterval=30000)\n-- Check out the last data from the different mines!\nSELECT * FROM ManaFarm",
+            "user": "anonymous",
+            "dateUpdated": "2022-10-13T12:51:39+0000",
+            "progress": 0,
+            "config": {
+                "editorSetting": {
+                    "language": "sql",
+                    "editOnDblClick": false,
+                    "completionKey": "TAB",
+                    "completionSupport": true
+                },
+                "colWidth": 12,
+                "editorMode": "ace/mode/sql",
+                "fontSize": 9,
+                "results": {
+                    "0": {
+                        "graph": {
+                            "mode": "multiBarChart",
+                            "height": 300,
+                            "optionOpen": false,
+                            "setting": {
+                                "multiBarChart": {
+                                    "xLabelStatus": "default"
+                                }
+                            },
+                            "commonSetting": {},
+                            "keys": [
+                                {
+                                    "name": "mine_name",
+                                    "index": 0,
+                                    "aggr": "sum"
+                                }
+                            ],
+                            "groups": [],
+                            "values": [
+                                {
+                                    "name": "rucinon",
+                                    "index": 1,
+                                    "aggr": "sum"
+                                },
+                                {
+                                    "name": "sludge",
+                                    "index": 5,
+                                    "aggr": "sum"
+                                },
+                                {
+                                    "name": "energy_to_mine",
+                                    "index": 6,
+                                    "aggr": "sum"
+                                }
+                            ]
+                        },
+                        "helium": {}
+                    }
+                },
+                "enabled": true
+            },
+            "settings": {
+                "params": {},
+                "forms": {}
+            },
+            "apps": [],
+            "runtimeInfos": {},
+            "progressUpdateIntervalMs": 500,
+            "jobName": "paragraph_1665665499485_1232507499",
+            "id": "paragraph_1665017450791_1768794412",
+            "dateCreated": "2022-10-13T12:51:39+0000",
+            "status": "READY",
+            "$$hashKey": "object:280"
+        },
+        {
+            "text": "%flink.ssql(type=update, refreshInterval=20000)\n-- Check out total rucinon production updated every minute, watch for sudden decreases of Rucinon when a mine gets depleted!\nSELECT  mine_name, TUMBLE_END(user_action_time, INTERVAL '1' MINUTE) AS window_end,COUNT(*) AS record_count , avg(rucinon) as AVERAGE_RUCINON\nFROM ManaFarm\nGROUP BY mine_name, TUMBLE(user_action_time, INTERVAL '1' MINUTE);",
+            "user": "anonymous",
+            "dateUpdated": "2022-10-13T14:27:15+0000",
+            "progress": 0,
+            "config": {
+                "editorSetting": {
+                    "language": "sql",
+                    "editOnDblClick": false,
+                    "completionKey": "TAB",
+                    "completionSupport": true
+                },
+                "colWidth": 12,
+                "editorMode": "ace/mode/sql",
+                "fontSize": 9,
+                "results": {
+                    "0": {
+                        "graph": {
+                            "mode": "table",
+                            "height": 300,
+                            "optionOpen": false,
+                            "setting": {
+                                "table": {
+                                    "tableGridState": {},
+                                    "tableColumnTypeState": {
+                                        "names": {
+                                            "mine_name": "string",
+                                            "rucinon_sum": "string",
+                                            "sludge_sum": "string"
+                                        },
+                                        "updated": false
+                                    },
+                                    "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                                    "tableOptionValue": {
+                                        "useFilter": false,
+                                        "showPagination": false,
+                                        "showAggregationFooter": false
+                                    },
+                                    "updated": false,
+                                    "initialized": false
+                                }
+                            },
+                            "commonSetting": {}
+                        },
+                        "helium": {}
+                    }
+                },
+                "enabled": true
+            },
+            "settings": {
+                "params": {},
+                "forms": {}
+            },
+            "apps": [],
+            "runtimeInfos": {},
+            "progressUpdateIntervalMs": 500,
+            "jobName": "paragraph_1665665499485_1999619731",
+            "id": "paragraph_1665017513909_2016229721",
+            "dateCreated": "2022-10-13T12:51:39+0000",
+            "dateStarted": "2022-10-13T13:31:47+0000",
+            "dateFinished": "2022-10-13T14:12:09+0000",
+            "status": "ERROR",
+            "$$hashKey": "object:281"
+        },
+        {
+            "text": "%ipyflink\n# Manual update of which mine we want to use!\n# if you get a permissions error try again!\n# I bet there is a way to automate this...\nimport boto3 \nssm = boto3.client(\"ssm\", region_name=\"us-east-1\")\nresponse = ssm.put_parameter(\n    Name = 'active_mine',\n    Value = 'Callisto',\n    Type = 'String',\n    Overwrite = True)\nprint(response)",
+            "user": "anonymous",
+            "dateUpdated": "2022-10-13T12:51:39+0000",
+            "progress": 0,
+            "config": {
+                "editorSetting": {
+                    "language": "python",
+                    "editOnDblClick": false,
+                    "completionKey": "TAB",
+                    "completionSupport": true
+                },
+                "colWidth": 12,
+                "editorMode": "ace/mode/python",
+                "fontSize": 9,
+                "results": {},
+                "enabled": true
+            },
+            "settings": {
+                "params": {},
+                "forms": {}
+            },
+            "apps": [],
+            "runtimeInfos": {},
+            "progressUpdateIntervalMs": 500,
+            "jobName": "paragraph_1665665499486_1790335108",
+            "id": "paragraph_1665017548217_958037393",
+            "dateCreated": "2022-10-13T12:51:39+0000",
+            "status": "READY",
+            "$$hashKey": "object:283"
+        },
+        {
+            "text": "%pyflink\n# Automation for choosing the mine -- Part 1 -- IN PROGRESS!\n# UDF which updates the SSM Param with the mine we want to ore with the String passed in\n# What in the crunion is a UDF?\n#Fix: Only seems to work with new SSM Params\nst_env.add_python_file('/opt/conda/lib/python3.8/site-packages')\n@udf(input_types=[DataTypes.STRING()], result_type=DataTypes.STRING())\ndef best_mine(i):\n    import boto3\n    print(i)\n    ssm = boto3.client(\"ssm\", region_name=\"us-east-1\")\n    response = ssm.put_parameter(\n        Name = 'active_mine',\n        Value = i,\n        Type = 'String',\n        Overwrite = False)\n    print(response)\n    return i\nst_env.register_function(\"best_mine\",\n                            best_mine) ",
+            "user": "anonymous",
+            "dateUpdated": "2022-10-13T14:28:18+0000",
+            "progress": 0,
+            "config": {
+                "editorSetting": {
+                    "language": "python",
+                    "editOnDblClick": false,
+                    "completionKey": "TAB",
+                    "completionSupport": true
+                },
+                "colWidth": 12,
+                "editorMode": "ace/mode/python",
+                "fontSize": 9,
+                "results": {},
+                "enabled": true
+            },
+            "settings": {
+                "params": {},
+                "forms": {}
+            },
+            "results": {
+                "code": "SUCCESS",
+                "msg": []
+            },
+            "apps": [],
+            "runtimeInfos": {},
+            "progressUpdateIntervalMs": 500,
+            "jobName": "paragraph_1665665499486_1142747997",
+            "id": "paragraph_1665019402122_816346356",
+            "dateCreated": "2022-10-13T12:51:39+0000",
+            "dateStarted": "2022-10-13T13:05:18+0000",
+            "dateFinished": "2022-10-13T13:05:23+0000",
+            "status": "FINISHED",
+            "$$hashKey": "object:284"
+        },
+        {
+            "text": "%flink.ssql(type=update)\n-- Automation for choosing the mine -- Part 2 -- In Progress --\n-- Query which executes best_mine UDF... FIX: it's picking the smallest mine for some reason?!\n\nSELECT best_mine(mine_name) as mine_name, sum(rucinon) AS rucinon_sum, sum(sludge) as sludge_sum\nFROM ManaFarm\nGROUP BY SESSION(user_action_time, INTERVAL '10' SECOND), mine_name\nORDER BY rucinon_sum asc limit 1",
+            "user": "anonymous",
+            "dateUpdated": "2022-10-13T14:27:15+0000",
+            "progress": 0,
+            "config": {
+                "editorSetting": {
+                    "language": "sql",
+                    "editOnDblClick": false,
+                    "completionKey": "TAB",
+                    "completionSupport": true
+                },
+                "colWidth": 12,
+                "editorMode": "ace/mode/sql",
+                "fontSize": 9,
+                "results": {
+                    "0": {
+                        "graph": {
+                            "mode": "table",
+                            "height": 300,
+                            "optionOpen": false,
+                            "setting": {
+                                "table": {
+                                    "tableGridState": {},
+                                    "tableColumnTypeState": {
+                                        "names": {
+                                            "mine_name": "string",
+                                            "rucinon_sum": "string",
+                                            "sludge_sum": "string"
+                                        },
+                                        "updated": false
+                                    },
+                                    "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                                    "tableOptionValue": {
+                                        "useFilter": false,
+                                        "showPagination": false,
+                                        "showAggregationFooter": false
+                                    },
+                                    "updated": false,
+                                    "initialized": false
+                                }
+                            },
+                            "commonSetting": {}
+                        }
+                    }
+                },
+                "enabled": true
+            },
+            "settings": {
+                "params": {},
+                "forms": {}
+            },
+            "apps": [],
+            "runtimeInfos": {},
+            "progressUpdateIntervalMs": 500,
+            "jobName": "paragraph_1665665499486_343501117",
+            "id": "paragraph_1665427511169_397195082",
+            "dateCreated": "2022-10-13T12:51:39+0000",
+            "dateStarted": "2022-10-13T13:27:49+0000",
+            "dateFinished": "2022-10-13T13:49:59+0000",
+            "status": "ERROR",
+            "$$hashKey": "object:285"
+        },
+        {
+            "text": "%flink.ssql\n",
+            "user": "anonymous",
+            "dateUpdated": "2022-10-13T13:05:32+0000",
+            "progress": 0,
+            "config": {
+                "colWidth": 12,
+                "fontSize": 9,
+                "enabled": true,
+                "results": {},
+                "editorSetting": {
+                    "language": "sql",
+                    "editOnDblClick": false,
+                    "completionKey": "TAB",
+                    "completionSupport": true
+                },
+                "editorMode": "ace/mode/sql"
+            },
+            "settings": {
+                "params": {},
+                "forms": {}
+            },
+            "apps": [],
+            "runtimeInfos": {},
+            "progressUpdateIntervalMs": 500,
+            "jobName": "paragraph_1665666332954_1285219257",
+            "id": "paragraph_1665666332954_1285219257",
+            "dateCreated": "2022-10-13T13:05:32+0000",
+            "status": "READY",
+            "$$hashKey": "object:286"
+        }
+    ],
+    "name": "NewFrontier",
+    "id": "2HGNP2YUP",
+    "defaultInterpreterGroup": "flink",
+    "version": "0.9.0",
+    "noteParams": {},
+    "noteForms": {},
+    "angularObjects": {},
+    "config": {
+        "isZeppelinNotebookCronEnable": false,
+        "looknfeel": "default",
+        "personalizedMode": "false"
+    },
+    "info": {},
+    "path": "/NewFrontier"
+}
